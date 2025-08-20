@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { ExpenseChart } from '@/components/ExpenseChart';
+import { CloudExportHub } from '@/components/CloudExportHub';
 import { useExpenses } from '@/hooks/useExpenses';
 import { calculateExpenseSummary, formatCurrency } from '@/lib/utils';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '@/lib/constants';
@@ -9,6 +11,7 @@ import { CATEGORY_COLORS, CATEGORY_ICONS } from '@/lib/constants';
 export default function Dashboard() {
   const { expenses, loading } = useExpenses();
   const summary = calculateExpenseSummary(expenses);
+  const [isCloudExportOpen, setIsCloudExportOpen] = useState(false);
 
   if (loading) {
     return (
@@ -139,25 +142,16 @@ export default function Dashboard() {
               </div>
             </a>
             <button
-              onClick={() => {
-                const csvContent = `Date,Category,Description,Amount\n${expenses.map(e => 
-                  `${e.date},${e.category},"${e.description}",${e.amount}`
-                ).join('\n')}`;
-                const blob = new Blob([csvContent], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'expenses.csv';
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+              onClick={() => setIsCloudExportOpen(true)}
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left relative overflow-hidden group"
             >
-              <span className="text-2xl mr-3">📊</span>
-              <div>
-                <p className="font-medium text-gray-900">Export Data</p>
-                <p className="text-sm text-gray-600">Download as CSV</p>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <span className="text-2xl mr-3 relative">☁️</span>
+              <div className="relative">
+                <p className="font-medium text-gray-900">Cloud Export Hub</p>
+                <p className="text-sm text-gray-600">Templates, sharing & automation</p>
               </div>
+              <span className="ml-auto text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity relative">→</span>
             </button>
           </div>
         </div>
@@ -181,6 +175,13 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Cloud Export Hub */}
+      <CloudExportHub
+        isOpen={isCloudExportOpen}
+        onClose={() => setIsCloudExportOpen(false)}
+        expenses={expenses}
+      />
     </Layout>
   );
 }
