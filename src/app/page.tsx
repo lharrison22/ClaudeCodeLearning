@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { ExpenseChart } from '@/components/ExpenseChart';
+import { ExportModal } from '@/components/ExportModal';
 import { useExpenses } from '@/hooks/useExpenses';
 import { calculateExpenseSummary, formatCurrency } from '@/lib/utils';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '@/lib/constants';
@@ -9,6 +11,7 @@ import { CATEGORY_COLORS, CATEGORY_ICONS } from '@/lib/constants';
 export default function Dashboard() {
   const { expenses, loading } = useExpenses();
   const summary = calculateExpenseSummary(expenses);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   if (loading) {
     return (
@@ -139,24 +142,13 @@ export default function Dashboard() {
               </div>
             </a>
             <button
-              onClick={() => {
-                const csvContent = `Date,Category,Description,Amount\n${expenses.map(e => 
-                  `${e.date},${e.category},"${e.description}",${e.amount}`
-                ).join('\n')}`;
-                const blob = new Blob([csvContent], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'expenses.csv';
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
+              onClick={() => setIsExportModalOpen(true)}
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
             >
               <span className="text-2xl mr-3">📊</span>
               <div>
                 <p className="font-medium text-gray-900">Export Data</p>
-                <p className="text-sm text-gray-600">Download as CSV</p>
+                <p className="text-sm text-gray-600">Advanced export options</p>
               </div>
             </button>
           </div>
@@ -181,6 +173,13 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        expenses={expenses}
+      />
     </Layout>
   );
 }
