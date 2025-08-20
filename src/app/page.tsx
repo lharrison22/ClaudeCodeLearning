@@ -3,7 +3,7 @@
 import { Layout } from '@/components/Layout';
 import { ExpenseChart } from '@/components/ExpenseChart';
 import { useExpenses } from '@/hooks/useExpenses';
-import { calculateExpenseSummary, formatCurrency } from '@/lib/utils';
+import { calculateExpenseSummary, formatCurrency, exportToCSV, downloadCSV } from '@/lib/utils';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '@/lib/constants';
 
 export default function Dashboard() {
@@ -140,16 +140,8 @@ export default function Dashboard() {
             </a>
             <button
               onClick={() => {
-                const csvContent = `Date,Category,Description,Amount\n${expenses.map(e => 
-                  `${e.date},${e.category},"${e.description}",${e.amount}`
-                ).join('\n')}`;
-                const blob = new Blob([csvContent], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'expenses.csv';
-                a.click();
-                URL.revokeObjectURL(url);
+                const csvContent = exportToCSV(expenses);
+                downloadCSV(csvContent, 'expenses.csv');
               }}
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
             >
